@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:; connect-src 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <title>🏥 人工呼吸器アラーム対応トレーニングアプリ - AI医療教育システム</title>
+  <style>
+        :root {
+            --bg: #0a0e1a;
+            --card: #1a1f2e;
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --warning: #ffb800;
+            --danger: #ff4757;
+            --muted: #94a3b8;
+            --text: #f1f5f9;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f2e 50%, #0f1419 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(0,212,255,0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(118,75,162,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1400px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0,212,255,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .header-content h1 {
+            margin: 0;
+            font-size: 28px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .header-content p {
+            margin: 5px 0 0;
+            color: var(--muted);
+            font-size: 16px;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .start-screen h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .start-screen p {
+            font-size: 18px;
+            color: var(--muted);
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: var(--gradient);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Cover Screen Styles */
+        .cover-screen {
+            text-align: center;
+            padding: 60px 40px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 20px;
+        }
+
+        .cover-title {
+            font-size: 42px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: neon-glow 3s ease-in-out infinite, text-shimmer 4s linear infinite;
+            filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.5))
+                    drop-shadow(0 0 12px rgba(0, 255, 136, 0.3));
+        }
+
+        .cover-subtitle {
+            font-size: 20px;
+            color: var(--muted);
+            margin-bottom: 50px;
+            font-weight: 500;
+        }
+
+        .ventilator-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin: 40px 0;
+            padding: 20px;
+        }
+
+        .ventilator-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ventilator-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .ventilator-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .ventilator-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            border-color: var(--accent);
+            box-shadow: 0 20px 60px rgba(0,212,255,0.3), 0 0 30px rgba(102, 126, 234, 0.2);
+        }
+
+        .ventilator-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .ventilator-card.disabled:hover {
+            transform: none;
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
+
+        .ventilator-image-container {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .ventilator-image-container img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+
+        .ventilator-card:hover .ventilator-image-container img {
+            transform: scale(1.1);
+        }
+
+        .ventilator-name {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ventilator-status {
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+        }
+
+        .ventilator-status.available {
+            background: linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .ventilator-status.coming-soon {
+            background: linear-gradient(135deg, rgba(255,184,0,0.2), rgba(255,184,0,0.1));
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .cover-description {
+            font-size: 16px;
+            color: var(--muted);
+            line-height: 1.8;
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(145deg, rgba(0,212,255,0.08), rgba(0,212,255,0.03));
+            border-radius: 15px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        @keyframes neon-glow {
+            0%, 100% {
+                filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.4))
+                        drop-shadow(0 0 10px rgba(0, 255, 136, 0.25));
+            }
+            50% {
+                filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6))
+                        drop-shadow(0 0 15px rgba(0, 255, 136, 0.4));
+            }
+        }
+
+        @keyframes text-shimmer {
+            0% {
+                background-position: 0% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+
+
+
+
+        .scenario-container {
+            display: none;
+        }
+
+        .scenario-container.active {
+            display: block;
+        }
+
+        .scenario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .alarm-badge {
+            display: inline-block;
+            padding: 10px 16px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--danger), #ff6b6b);
+            font-weight: 700;
+            color: white;
+            font-size: 14px;
+            box-shadow: 0 5px 15px rgba(255,71,87,0.3);
+            animation: glow 2s infinite alternate;
+        }
+
+        .progress-info {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .quiz-section {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .media-section {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .media {
+            border-radius: 12px;
+            overflow: hidden;
+            height: 350px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            padding: 10px;
+        }
+
+        .media video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        /* 動画上の警報メッセージオーバーレイ */
+        .video-alarm-overlay {
+            background: #ff0000;
+            color: white;
+            padding: 13px 27px;
+            font-size: 19px;
+            font-weight: 700;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(255, 0, 0, 0.6);
+            margin-bottom: 10px;
+            text-align: center;
+            min-width: 200px;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.5s ease-in-out, max-height 0.5s ease-in-out, padding 0.5s ease-in-out, margin 0.5s ease-in-out;
+        }
+
+        .video-alarm-overlay.show {
+            opacity: 1;
+            max-height: 200px;
+            padding: 13px 27px;
+            margin-bottom: 10px;
+        }
+
+        .video-alarm-overlay:not(.show) {
+            padding: 0;
+            margin-bottom: 0;
+        }
+
+        @keyframes alarm-pulse {
+            0%, 100% {
+                box-shadow: 0 10px 40px rgba(255, 0, 0, 0.6);
+            }
+            50% {
+                box-shadow: 0 10px 60px rgba(255, 0, 0, 0.9);
+            }
+        }
+
+        .video-alarm-overlay.show {
+            animation: alarm-pulse 1.5s infinite;
+        }
+
+        .media-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: linear-gradient(145deg, rgba(0,212,255,0.2), rgba(0,212,255,0.1));
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .quiz-content {
+            flex: 1;
+        }
+
+        .quiz-actions {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .choice {
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice:hover {
+            background: linear-gradient(145deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05));
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .choice input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: var(--accent);
+        }
+
+        .choice label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .choice:hover label {
+            color: var(--text);
+        }
+
+
+        .choice.correct {
+            background: linear-gradient(145deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+            border-color: var(--success);
+        }
+
+        .choice.incorrect {
+            background: linear-gradient(145deg, rgba(255,71,87,0.2), rgba(255,71,87,0.1));
+            border-color: var(--danger);
+        }
+
+        .explanation {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05));
+            border-left: 4px solid var(--accent);
+            animation: slideInUp 0.5s ease-out;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .explanation h4 {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 16px;
+        }
+
+        .explanation p {
+            margin: 0;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .result-banner {
+            text-align: center;
+            padding: 15px 20px;
+            margin: 15px auto;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: 700;
+            animation: resultPulse 0.8s ease-out;
+            max-width: 80%;
+        }
+
+        .result-banner.correct {
+            background: linear-gradient(145deg, rgba(0,255,136,0.2), rgba(0,255,136,0.1));
+            color: var(--success);
+            border: 2px solid var(--success);
+            box-shadow: 0 10px 30px rgba(0,255,136,0.3);
+        }
+
+        .result-banner.incorrect {
+            background: linear-gradient(145deg, rgba(255,71,87,0.2), rgba(255,71,87,0.1));
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            box-shadow: 0 10px 30px rgba(255,71,87,0.3);
+        }
+
+        .result-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes resultPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #ff6b6b);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255,71,87,0.4);
+        }
+
+        .history-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-scenario {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .history-result {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .history-result.correct {
+            background: rgba(0,255,136,0.2);
+            color: var(--success);
+        }
+
+        .history-result.incorrect {
+            background: rgba(255,71,87,0.2);
+            color: var(--danger);
+        }
+
+        .history-date {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+    }
+    
+    /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes glow {
+            0% {
+                box-shadow: 0 5px 15px rgba(255,71,87,0.3);
+            }
+            100% {
+                box-shadow: 0 5px 25px rgba(255,71,87,0.6);
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .slide-in {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .app {
+                padding: 0;
+            }
+            
+            .card {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .header-content h1 {
+                font-size: 20px;
+            }
+            
+            .header-content p {
+                font-size: 14px;
+            }
+            
+            .cover-title {
+                font-size: 28px;
+            }
+            
+            .cover-subtitle {
+                font-size: 16px;
+            }
+            
+            .ventilator-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 10px;
+            }
+            
+            .ventilator-image-container {
+                height: 200px;
+            }
+            
+            .ventilator-name {
+                font-size: 22px;
+            }
+            
+            .cover-description {
+                font-size: 14px;
+                padding: 20px;
+            }
+            
+            .main-content {
+                gap: 20px;
+            }
+            
+            .media {
+                height: 220px;
+                padding: 5px;
+            }
+            
+            .video-alarm-overlay {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+            
+            .media-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                padding: 10px 14px;
+            }
+            
+            .scenario-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+            
+            .question {
+                font-size: 18px;
+            }
+            
+            .choice {
+                padding: 12px;
+            }
+            
+            .choice label {
+                font-size: 15px;
+            }
+            
+            .explanation {
+                max-width: 100%;
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .result-banner {
+                font-size: 18px;
+                max-width: 100%;
+                padding: 12px 16px;
+            }
+            
+            .result-icon {
+                font-size: 24px;
+            }
+            
+            .result-card {
+                padding: 20px;
+            }
+            
+            .result-title {
+                font-size: 22px;
+            }
+            
+            .result-message {
+                font-size: 15px;
+            }
+            
+            .result-btn {
+                padding: 12px 20px;
+                font-size: 15px;
+            }
+        }
+        
+        /* iPhone 12 specific adjustments */
+        @media (max-width: 428px) {
+            .cover-screen {
+                padding: 30px 20px;
+            }
+            
+            .cover-title {
+                font-size: 24px;
+            }
+            
+            .start-btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+        }
+
+        .result-banner.incorrect {
+            background: linear-gradient(145deg, rgba(255,71,87,0.2), rgba(255,71,87,0.1));
+            color: var(--danger);
+            border: 2px solid var(--danger);
+            box-shadow: 0 10px 30px rgba(255,71,87,0.3);
+        }
+
+        .result-card {
+            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 18px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card.success {
+            border: 1px solid rgba(0,255,136,0.4);
+            background: linear-gradient(145deg, rgba(0,255,136,0.18), rgba(0,212,255,0.12));
+        }
+
+        .result-card.failure {
+            border: 1px solid rgba(255,71,87,0.4);
+            background: linear-gradient(145deg, rgba(255,71,87,0.18), rgba(255,107,129,0.12));
+        }
+
+        .result-title {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text);
+        }
+
+        .result-message {
+            text-align: center;
+            color: var(--muted);
+            line-height: 1.8;
+            font-size: 16px;
+        }
+
+        .result-metrics {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .result-metric {
+            min-width: 120px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            text-align: center;
+        }
+
+        .result-metric .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .result-metric .metric-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .result-btn {
+            padding: 14px 24px;
+            border-radius: 14px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .result-btn.primary {
+            background: linear-gradient(135deg, #9b5de5 0%, #00d4ff 100%);
+            color: white;
+            box-shadow: 0 12px 25px rgba(0,212,255,0.25);
+        }
+
+        .result-btn.secondary {
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .result-btn.danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ea1d4d 100%);
+            color: white;
+            box-shadow: 0 12px 25px rgba(255,71,87,0.3);
+        }
+
+        .result-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-footnote {
+            text-align: center;
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.7;
+            border-top: 1px dashed rgba(255,255,255,0.2);
+            padding-top: 16px;
+        }
+
+        .choices.result-mode {
+            align-items: stretch;
+        }
+
+        /* Confetti Animation */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Fireworks Animation */
+        .firework {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        @keyframes firework-burst {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .firework-trail {
+            position: fixed;
+            width: 3px;
+            height: 20px;
+            z-index: 9998;
+            pointer-events: none;
+        }
+
+        @keyframes firework-launch {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(var(--launch-distance));
+                opacity: 0;
+            }
+        }
+ 
+        .result-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+            animation: bounce 1s infinite;
+        }
+
+  </style>
+</head>
+<body>
+    <div class="app">
+        <!-- カバー画面 -->
+        <div class="card" id="startScreen">
+            <header>
+                <div class="logo pulse-animation">🏥</div>
+                <div class="header-content">
+                    <h1>人工呼吸器アラーム対応トレーニングアプリ</h1>
+                    <p>臨床工学技士・看護師・研修医向けトレーニングアプリ</p>
+                </div>
+            </header>
+            
+            <div class="cover-screen">
+                <h2 class="cover-title">呼吸器を選択してください</h2>
+                <p class="cover-subtitle">各呼吸器のアラーム対応シナリオを学習できます</p>
+                
+                <div class="ventilator-grid">
+                    <!-- Servo_air -->
+                    <div class="ventilator-card" onclick="selectVentilator('Servo_air')">
+                        <div class="ventilator-image-container">
+                            <img src="Servo_air.jpg" alt="Servo_air">
+                        </div>
+                        <div class="ventilator-name">Servo_air</div>
+                    </div>
+                    
+                    <!-- Puppy -->
+                    <div class="ventilator-card" onclick="selectVentilator('Puppy')">
+                        <div class="ventilator-image-container">
+                            <img src="Puppy.jpg" alt="Puppy">
+                        </div>
+                        <div class="ventilator-name">Puppy</div>
+                    </div>
+                    
+                    <!-- EVO -->
+                    <div class="ventilator-card" onclick="selectVentilator('EVO')">
+                        <div class="ventilator-image-container">
+                            <img src="EVO.jpg" alt="EVO">
+                        </div>
+                        <div class="ventilator-name">EVO</div>
+                    </div>
+                </div>
+                
+                <div class="cover-description">
+                    <p><strong>このシミュレーションでは、人工呼吸器のアラーム発生時の対応手順を学習できます。</strong></p>
+                    <p>動画を確認し、適切な対応を選択してください。選択によって異なる展開を体験できる分岐型シナリオ形式です。</p>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- シナリオ画面 -->
+        <div class="card scenario-container" id="scenarioContainer">
+            <div class="scenario-header">
+                <div>
+                    <span class="alarm-badge" id="alarmBadge">人工呼吸器アラーム対応トレーニングアプリ</span>
+                    <div class="progress-info">
+                        <span id="progressText">問題 1 / 3</span>
+          </div>
+          </div>
+          </div>
+
+          <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 33.33%"></div>
+          </div>
+
+            <div class="main-content">
+                <!-- メディアセクション -->
+                <div class="media-section">
+                    <h3>📹 アラーム動画</h3>
+                    <div id="videoAlarmOverlay" class="video-alarm-overlay">
+                        気道内圧が高すぎます
+                    </div>
+                    <div class="media">
+                        <video id="alarmVideo" controls>
+                            <source src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMWF2YzEAAAAIZnJlZQAAASxtZGF0AQAAAgABBgAAABhhdXRoAAAA" type="video/mp4">
+                            お使いのブラウザは動画再生に対応していません。
+                        </video>
+          </div>
+                    <div class="media-controls">
+                        <button class="control-btn" onclick="playAlarmSound()">🔊 アラーム音を再生</button>
+                        <button class="control-btn" onclick="toggleVideo()">⏯️ 動画再生/停止</button>
+            </div>
+          </div>
+
+                <!-- クイズセクション -->
+                <div class="quiz-section">
+                    <div class="quiz-content">
+                        <h3>📝 対応選択</h3>
+                        <div class="question" id="questionText">
+                            Q1. 右の動画を再生しアラーム内容を確認後、どの対応をまず行いますか？
+        </div>
+                        <div class="choices" id="choicesContainer">
+                            <!-- 選択肢はJavaScriptで動的に生成 -->
+            </div>
+                        <div class="action-buttons" id="actionButtons">
+                            <button class="btn btn-primary" id="submitBtn" onclick="submitAnswer()" disabled>回答する</button>
+            </div>
+                        <div class="result-banner hidden" id="resultBanner">
+                            <span class="result-icon" id="resultIcon">🎉</span>
+                            <div id="resultText">正解！</div>
+          </div>
+                        <div class="explanation hidden" id="explanation">
+                            <h4>💡 解説</h4>
+                            <p id="explanationText"></p>
+                        </div>
+                    </div>
+                    <div class="quiz-actions">
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" id="nextBtn" onclick="nextScenario()" style="display: none;">次の問題へ</button>
+                            <button class="btn btn-secondary" id="finishBtn" onclick="showResults()" style="display: none;">結果を確認</button>
+                        </div>
+              </div>
+            </div>
+          </div>
+
+          </div>
+
+  </div>
+
+  <script>
+        // シナリオデータ
+        // 分岐型シナリオ定義
+        const branchingScenarios = {
+            high_pressure: {
+                id: 'high_pressure',
+                name: '高圧アラーム',
+                alarmMessage: '気道内圧が高すぎます',
+                alarmDelay: 3000,
+                startNode: 'q1_initial',
+                nodes: {
+                    'q1_initial': {
+                        question: 'Q1. 右の動画を再生しアラーム内容を確認後、どの対応をまず行いますか？',
+                        videoSrc: 'high_pressure_alarm.mp4',
+                        choices: [
+                            { text: '患者の気道を確認し、必要に応じて痰を吸引する', next: 'q2_circuit_check', correct: true },
+                            { text: '人工呼吸器の設定圧を下げる', next: 'q2_spo2_drop', correct: false },
+                            { text: '患者の体位を変更する', next: 'q2_spo2_drop', correct: false },
+                            { text: '人工呼吸器を一時停止する', next: 'q2_spo2_drop', correct: false }
+                        ]
+                    },
+                    'q2_circuit_check': {
+                        question: '回路に屈曲を発見しました。どうしますか？',
+                        choices: [
+                            { text: '屈曲を直す', next: 'success', correct: true },
+                            { text: 'バギングする', next: 'failure', correct: false }
+                        ]
+                    },
+                    'q2_spo2_drop': {
+                        question: 'アラーム音は止まりましたが、患者のSpO₂が低下し始めました！どうしますか？',
+                        choices: [
+                            { text: '回路を確認する', next: 'q2_circuit_check', correct: true },
+                            { text: '設定圧を下げる', next: 'failure', correct: false }
+                        ]
+                    },
+                    'success': {
+                        type: 'ending',
+                        message: '✅ 屈曲を直してアラームが解除されました！<br>シナリオクリア！🎉',
+                        correct: true
+                    },
+                    'failure': {
+                        type: 'ending',
+                        message: '❌ 対応が遅れ、SpO₂がさらに低下しました。<br>もう一度挑戦しましょう。',
+                        correct: false
+                    }
+                }
+            },
+            };
+
+        const scenarioOrder = ['high_pressure'];
+
+        // アプリケーション状態
+        let isAnswered = false;
+        
+        // 分岐型シナリオ用の状態
+        let currentBranchingScenario = null;
+        let currentNodeId = null;
+        let branchingAnswers = [];
+        let hasShownExplanation = false; // 解説表示フラグ
+        let currentMainQuestionNumber = 1;
+        let currentScenarioIndex = 0;
+        let completedScenarioIds = new Set();
+
+
+
+        // 初期化
+        function init() {
+            loadHistory();
+            updateHistoryDisplay();
+        }
+
+        // 呼吸器選択
+        function selectVentilator(ventilatorType) {
+            if (ventilatorType === 'Servo_air') {
+                // Servo_airの5問のクイズを開始
+                startBranchingScenario('high_pressure');
+            } else if (ventilatorType === 'Puppy') {
+                alert('Puppy の学習コンテンツは準備中です。しばらくお待ちください。');
+            } else if (ventilatorType === 'EVO') {
+                alert('EVO の学習コンテンツは準備中です。しばらくお待ちください。');
+            }
+        }
+
+        // 分岐型シナリオ開始
+        function startBranchingScenario(scenarioId) {
+            console.log('startBranchingScenario called with:', scenarioId);
+            console.log('branchingScenarios:', branchingScenarios);
+            
+            if (!branchingScenarios[scenarioId]) {
+                console.error('Scenario not found:', scenarioId);
+                alert('シナリオが見つかりません: ' + scenarioId);
+                return;
+            }
+            
+            const scenarioIndex = scenarioOrder.indexOf(scenarioId);
+            if (scenarioIndex !== -1) {
+                if (scenarioIndex === 0) {
+                    completedScenarioIds.clear();
+                }
+                currentScenarioIndex = scenarioIndex;
+            }
+             
+            currentBranchingScenario = branchingScenarios[scenarioId];
+            currentNodeId = currentBranchingScenario.startNode;
+            const firstNode = currentBranchingScenario.nodes[currentNodeId];
+            const match = firstNode.question.match(/^Q(\d+)\./);
+            currentMainQuestionNumber = match ? parseInt(match[1], 10) : 1;
+            branchingAnswers = [];
+            hasShownExplanation = false; // 解説表示フラグをリセット
+            
+            console.log('Starting scenario:', currentBranchingScenario);
+            console.log('Start node:', currentNodeId);
+            
+            // 画面を切り替え
+            const startScreen = document.getElementById('startScreen');
+            const scenarioContainer = document.getElementById('scenarioContainer');
+            
+            console.log('startScreen element:', startScreen);
+            console.log('scenarioContainer element:', scenarioContainer);
+            
+            if (startScreen) {
+                startScreen.classList.add('hidden');
+                console.log('startScreen hidden');
+            } else {
+                console.error('startScreen element not found');
+            }
+            
+            if (scenarioContainer) {
+                scenarioContainer.classList.add('active');
+                console.log('scenarioContainer activated');
+            } else {
+                console.error('scenarioContainer element not found');
+            }
+            
+            loadBranchingNode();
+        }
+
+        // 分岐型ノード読み込み
+        function loadBranchingNode() {
+            console.log('loadBranchingNode called');
+            console.log('currentNodeId:', currentNodeId);
+            console.log('currentBranchingScenario:', currentBranchingScenario);
+            
+            const node = currentBranchingScenario.nodes[currentNodeId];
+            console.log('Current node:', node);
+            
+            if (!node) {
+                console.error('Node not found:', currentNodeId);
+                alert('ノードが見つかりません: ' + currentNodeId);
+                return;
+            }
+            
+            isAnswered = false;
+
+            // アラームバッジとプログレス更新
+            document.getElementById('alarmBadge').textContent = '人工呼吸器アラーム対応トレーニングアプリ';
+            document.getElementById('progressText').textContent = `分岐シナリオ進行中`;
+            document.getElementById('progressFill').style.width = '100%';
+
+            // 質問文更新
+            const questionElement = document.getElementById('questionText');
+            if (questionElement) {
+                questionElement.classList.remove('hidden');
+                questionElement.className = 'question';
+            }
+
+            const subQuestionNumber = branchingAnswers.length + 1;
+            const questionTextContent = node.question.replace(/^Q\d+\.\s*/, '');
+            if (questionElement) {
+                questionElement.textContent = `Q${currentMainQuestionNumber}-${subQuestionNumber}. ${questionTextContent}`;
+            }
+
+            // 分岐型シナリオでは「回答する」ボタンを非表示
+            const actionButtons = document.getElementById('actionButtons');
+            if (actionButtons) {
+                actionButtons.style.display = 'none';
+            }
+
+            // 結果バナーを非表示
+            const resultBanner = document.getElementById('resultBanner');
+            if (resultBanner) {
+                resultBanner.classList.add('hidden');
+            }
+
+            // 解説を非表示
+            const explanation = document.getElementById('explanation');
+            if (explanation) {
+                explanation.classList.add('hidden');
+            }
+
+            // 動画更新（存在する場合）
+            if (node.videoSrc) {
+                const video = document.getElementById('alarmVideo');
+                const overlay = document.getElementById('videoAlarmOverlay');
+                
+                if (video) {
+                    video.src = node.videoSrc;
+                    video.load();
+                    console.log('Video updated:', node.videoSrc);
+                    
+                    // 警報オーバーレイを非表示にリセット
+                    if (overlay) {
+                        overlay.classList.remove('show');
+                    }
+                    
+                    // 警報メッセージを更新
+                    if (currentBranchingScenario.alarmMessage && overlay) {
+                        overlay.textContent = currentBranchingScenario.alarmMessage;
+                    }
+                    
+                    // 動画再生イベントをリセット
+                    video.ontimeupdate = null;
+                    
+                    // 動画再生時の警報メッセージ表示
+                    video.ontimeupdate = function() {
+                        const delayInSeconds = (currentBranchingScenario.alarmDelay || 3000) / 1000;
+                        if (video.currentTime >= delayInSeconds && overlay && !overlay.classList.contains('show')) {
+                            overlay.classList.add('show');
+                        }
+                        
+                        // 動画が最初に戻ったら警報を非表示に
+                        if (video.currentTime < delayInSeconds && overlay && overlay.classList.contains('show')) {
+                            overlay.classList.remove('show');
+                        }
+                    };
+                    
+                } else {
+                    console.error('Video element not found');
+                }
+            }
+
+            // 選択肢更新
+            const choicesContainer = document.getElementById('choicesContainer');
+            console.log('choicesContainer:', choicesContainer);
+            
+            if (!choicesContainer) {
+                console.error('choicesContainer element not found');
+                return;
+            }
+            
+            choicesContainer.classList.remove('result-mode');
+            choicesContainer.innerHTML = '';
+
+            console.log('node.choices:', node.choices);
+            if (node.choices && node.choices.length > 0) {
+                // 選択肢をランダムに並び替え
+                const shuffledChoices = [...node.choices];
+                for (let i = shuffledChoices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledChoices[i], shuffledChoices[j]] = [shuffledChoices[j], shuffledChoices[i]];
+                }
+                
+                shuffledChoices.forEach((choice, index) => {
+                    console.log('Creating choice:', choice, 'index:', index);
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.className = 'choice';
+                    
+                    // ラジオボタンを作成
+                    const radioInput = document.createElement('input');
+                    radioInput.type = 'radio';
+                    radioInput.name = 'branchingChoice';
+                    radioInput.id = `choice_${index}`;
+                    radioInput.value = index;
+                    
+                    // ラベルを作成
+                    const label = document.createElement('label');
+                    label.htmlFor = `choice_${index}`;
+                    label.textContent = choice.text;
+                    
+                    // クリックイベントを設定
+                    choiceDiv.onclick = () => {
+                        radioInput.checked = true;
+                        selectBranchingChoice(choice, index);
+                    };
+                    
+                    // ラベルにもクリックイベントを設定
+                    label.onclick = (e) => {
+                        e.stopPropagation();
+                        radioInput.checked = true;
+                        selectBranchingChoice(choice, index);
+                    };
+                    
+                    // ラジオボタンとラベルを追加
+                    choiceDiv.appendChild(radioInput);
+                    choiceDiv.appendChild(label);
+                    choicesContainer.appendChild(choiceDiv);
+                });
+                console.log('Choices created successfully with random order');
+            } else {
+                console.error('No choices found in node');
+            }
+        }
+
+        // 分岐型選択肢選択
+        function selectBranchingChoice(choice, index) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            // 音効果を再生（従来型学習と同じ音を使用）
+            if (choice.correct) {
+                playCorrectSound();
+            } else {
+                playIncorrectSound();
+            }
+
+            // 視覚的フィードバックを表示
+            showBranchingResult(choice.correct);
+
+            // 回答を記録
+            branchingAnswers.push({
+                nodeId: currentNodeId,
+                choice: choice.text,
+                correct: choice.correct,
+                timestamp: new Date().toISOString()
+            });
+
+            // 次のノードに移動（表示後に）
+            setTimeout(() => {
+                if (choice.next === 'success' || choice.next === 'failure') {
+                    showBranchingEnding(choice.next);
+                } else {
+                    currentNodeId = choice.next;
+                    loadBranchingNode();
+                }
+            }, 2000); // 2秒間表示してから次へ
+        }
+
+        // 分岐型結果表示
+        function showBranchingResult(isCorrect) {
+            const resultBanner = document.getElementById('resultBanner');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            
+            if (isCorrect) {
+                resultBanner.className = 'result-banner correct';
+                resultIcon.textContent = '🎉';
+                resultText.textContent = '正解！';
+                
+                // Q1の場合は解説を表示（2回目以降のみ）
+                if (currentBranchingScenario.id === 'high_pressure' && hasShownExplanation) {
+                    const explanation = document.getElementById('explanation');
+                    const explanationText = document.getElementById('explanationText');
+                    if (explanation && explanationText) {
+                        explanationText.textContent = '高圧アラームが発生した場合、まず患者の気道に問題がないか確認し、必要に応じて痰の吸引を行います。気道の閉塞が高圧の原因となることが多いためです。';
+                        explanation.classList.remove('hidden');
+                    }
+                }
+                
+                // 解説表示フラグを設定（次回から解説を表示）
+                if (currentBranchingScenario.id === 'high_pressure') {
+                    hasShownExplanation = true;
+                }
+            } else {
+                resultBanner.className = 'result-banner incorrect';
+                resultIcon.textContent = '❌';
+                resultText.textContent = '不正解';
+            }
+            resultBanner.classList.remove('hidden');
+        }
+
+        // 分岐型終了表示
+        function showBranchingEnding(endingType) {
+            const node = currentBranchingScenario.nodes[endingType];
+            const questionText = document.getElementById('questionText');
+            const choicesContainer = document.getElementById('choicesContainer');
+            const resultBanner = document.getElementById('resultBanner');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const explanation = document.getElementById('explanation');
+
+            const isSuccess = endingType === 'success';
+            // 学会発表用: 1問目で終了
+            const isFinalScenario = true; // 常に最終シナリオとして扱う
+            const nextScenarioId = null; // 次のシナリオに進まない
+
+            saveHistory();
+
+            if (!choicesContainer) {
+                console.error('choicesContainer element not found');
+                return;
+            }
+
+            if (resultBanner) {
+                resultBanner.classList.add('hidden');
+            }
+
+            if (explanation) {
+                explanation.classList.add('hidden');
+            }
+
+            if (isSuccess) {
+                completedScenarioIds.add(currentBranchingScenario.id);
+            }
+
+            choicesContainer.innerHTML = '';
+            choicesContainer.classList.add('result-mode');
+
+            if (questionText) {
+                questionText.textContent = '';
+                questionText.classList.add('hidden');
+            }
+
+            const scenarioTitle = currentBranchingScenario && currentBranchingScenario.name ? currentBranchingScenario.name : 'シナリオ';
+
+            const resultCard = document.createElement('div');
+            resultCard.className = `result-card ${isSuccess ? 'success' : 'failure'}`;
+
+            const title = document.createElement('div');
+            title.className = 'result-title';
+            title.textContent = isSuccess
+                ? '🎉 トレーニング完了！ 🎉'
+                : 'もう一歩です';
+            resultCard.appendChild(title);
+
+            const message = document.createElement('div');
+            message.className = 'result-message';
+            message.innerHTML = isSuccess
+                ? `お疲れ様でした！<br>${scenarioTitle} のトレーニングを完了しました。`
+                : `残念！<br>${scenarioTitle} のトレーニングは未完了です。もう一度手順を確認しましょう。`;
+            resultCard.appendChild(message);
+
+            const metrics = document.createElement('div');
+            metrics.className = 'result-metrics';
+
+            const createMetric = (label, value) => {
+                const metric = document.createElement('div');
+                metric.className = 'result-metric';
+
+                const metricValue = document.createElement('div');
+                metricValue.className = 'metric-value';
+                metricValue.textContent = value;
+
+                const metricLabel = document.createElement('div');
+                metricLabel.className = 'metric-label';
+                metricLabel.textContent = label;
+
+                metric.appendChild(metricValue);
+                metric.appendChild(metricLabel);
+                return metric;
+            };
+
+            metrics.appendChild(createMetric('トレーニング', isSuccess ? '完了' : '未完了'));
+            metrics.appendChild(createMetric('達成レベル', isSuccess ? '🏆' : '再挑戦'));
+
+            resultCard.appendChild(metrics);
+
+            const actions = document.createElement('div');
+            actions.className = 'result-actions';
+
+            const retryBtn = document.createElement('button');
+            retryBtn.className = 'result-btn primary';
+            retryBtn.textContent = 'もう一度挑戦';
+            retryBtn.onclick = () => {
+                startBranchingScenario(currentBranchingScenario.id);
+            };
+            actions.appendChild(retryBtn);
+
+            const menuBtn = document.createElement('button');
+            menuBtn.className = 'result-btn secondary';
+            menuBtn.textContent = 'メニューに戻る';
+            menuBtn.onclick = () => {
+                const scenarioContainer = document.getElementById('scenarioContainer');
+                const startScreen = document.getElementById('startScreen');
+                if (scenarioContainer) {
+                    scenarioContainer.classList.remove('active');
+                }
+                if (startScreen) {
+                    startScreen.classList.remove('hidden');
+                    startScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+            actions.appendChild(menuBtn);
+
+            const finishBtn = document.createElement('button');
+            finishBtn.className = 'result-btn danger';
+            finishBtn.textContent = '終了する';
+            finishBtn.onclick = () => {
+                const scenarioContainer = document.getElementById('scenarioContainer');
+                const startScreen = document.getElementById('startScreen');
+                if (scenarioContainer) {
+                    scenarioContainer.classList.remove('active');
+                }
+                if (startScreen) {
+                    startScreen.classList.remove('hidden');
+                }
+                alert('学習を終了しました。お疲れさまでした。');
+            };
+            actions.appendChild(finishBtn);
+
+            resultCard.appendChild(actions);
+
+            const footnote = document.createElement('div');
+            footnote.className = 'result-footnote';
+            footnote.innerHTML = node.message;
+            resultCard.appendChild(footnote);
+
+            choicesContainer.appendChild(resultCard);
+            resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // 紙吹雪と花火を表示
+            if (isSuccess) {
+                createConfetti();
+                createFireworks();
+            }
+        }
+
+        // 紙吹雪を生成
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#00d4ff', '#00ff88', '#ffb800'];
+            const confettiCount = 100;
+
+            for (let i = 0; i < confettiCount; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.height = (Math.random() * 10 + 5) + 'px';
+                    confetti.style.animation = `confetti-fall ${Math.random() * 3 + 2}s linear`;
+                    confetti.style.animationDelay = '0s';
+                    
+                    document.body.appendChild(confetti);
+
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }, i * 30);
+            }
+        }
+
+        // 花火を生成
+        function createFireworks() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7', '#a29bfe', '#fd79a8', '#00d4ff', '#00ff88', '#ffb800'];
+            const fireworksCount = 5;
+
+            for (let i = 0; i < fireworksCount; i++) {
+                setTimeout(() => {
+                    launchFirework(colors);
+                }, i * 800);
+            }
+        }
+
+        function launchFirework(colors) {
+            const startX = Math.random() * window.innerWidth;
+            const startY = window.innerHeight;
+            const targetY = Math.random() * (window.innerHeight * 0.3) + window.innerHeight * 0.1;
+            const launchDistance = startY - targetY;
+
+            // 打ち上げトレイル
+            const trail = document.createElement('div');
+            trail.className = 'firework-trail';
+            trail.style.left = startX + 'px';
+            trail.style.top = startY + 'px';
+            trail.style.background = 'linear-gradient(to top, rgba(255,255,255,0.8), transparent)';
+            trail.style.setProperty('--launch-distance', `-${launchDistance}px`);
+            trail.style.animation = 'firework-launch 1s ease-out';
+
+            document.body.appendChild(trail);
+
+            setTimeout(() => {
+                trail.remove();
+                // 花火の爆発
+                explodeFirework(startX, targetY, colors);
+            }, 1000);
+        }
+
+        function explodeFirework(x, y, colors) {
+            const particleCount = 30;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = Math.random() * 100 + 50;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+
+                const particle = document.createElement('div');
+                particle.className = 'firework';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.backgroundColor = color;
+                particle.style.boxShadow = `0 0 10px ${color}`;
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                particle.style.animation = `firework-burst ${Math.random() * 0.5 + 1}s ease-out`;
+
+                document.body.appendChild(particle);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1500);
+            }
+        }
+
+        // 正解音再生
+        function playCorrectSound() {
+            // ピンポーン音（正解音）
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // 高音→低音のピンポーン音
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // 不正解音再生
+        function playIncorrectSound() {
+            // ブッブー音（不正解音）
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // 低音のブッブー音
+            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+            oscillator.type = 'square';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // アラーム音再生（デモ用）
+        function playAlarmSound() {
+            // 実際のアラーム音を再生する場合は、Base64エンコードされた音声ファイルを使用
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBz2BzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBS13yO/eizEIHWq+8+OWT');
+            audio.play().catch(e => {
+                console.log('音声再生に失敗しました:', e);
+                alert('アラーム音の再生に失敗しました。ブラウザの設定を確認してください。');
+            });
+        }
+
+        // 動画再生/停止
+        function toggleVideo() {
+            const video = document.getElementById('alarmVideo');
+            if (video.paused) {
+                video.play().catch(e => {
+                    console.log('動画再生に失敗しました:', e);
+                    alert('動画の再生に失敗しました。ブラウザの設定を確認してください。');
+                });
+            } else {
+                video.pause();
+            }
+        }
+
+        // 履歴保存（分岐型シナリオ用）
+        function saveHistory() {
+            try {
+                const history = JSON.parse(localStorage.getItem('ventilatorHistory') || '[]');
+                const latestAnswer = branchingAnswers[branchingAnswers.length - 1];
+                
+                // 入力検証
+                if (!latestAnswer || typeof latestAnswer.correct !== 'boolean') {
+                    console.error('Invalid answer data');
+                    return;
+                }
+                
+                if (!currentBranchingScenario || !currentBranchingScenario.name) {
+                    console.error('Invalid scenario data');
+                    return;
+                }
+                
+                // 履歴サイズ制限（最大100件）
+                if (history.length >= 100) {
+                    history.splice(0, history.length - 99);
+                }
+                
+                const newEntry = {
+                    timestamp: new Date().toISOString(),
+                    scenario: currentBranchingScenario.name.substring(0, 100), // 長さ制限
+                    correct: latestAnswer.correct
+                };
+                
+                history.push(newEntry);
+                localStorage.setItem('ventilatorHistory', JSON.stringify(history));
+            } catch (error) {
+                console.error('Failed to save history:', error);
+            }
+        }
+
+        // 履歴読み込み（安全化）
+        function loadHistory() {
+            try {
+                const data = localStorage.getItem('ventilatorHistory');
+                if (!data) return [];
+                
+                const history = JSON.parse(data);
+                
+                // 配列かどうか検証
+                if (!Array.isArray(history)) {
+                    console.error('Invalid history data format');
+                    return [];
+                }
+                
+                // 各履歴項目の検証
+                return history.filter(item => {
+                    return item && 
+                           typeof item.timestamp === 'string' &&
+                           typeof item.scenario === 'string' &&
+                           typeof item.correct === 'boolean';
+                });
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                return [];
+            }
+        }
+
+        // 履歴表示更新
+        function updateHistoryDisplay() {
+            const history = loadHistory();
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                const noHistoryDiv = document.createElement('div');
+                noHistoryDiv.style.textAlign = 'center';
+                noHistoryDiv.style.color = 'var(--muted)';
+                noHistoryDiv.style.padding = '20px';
+                noHistoryDiv.textContent = '履歴がありません';
+                historyList.innerHTML = '';
+                historyList.appendChild(noHistoryDiv);
+                return;
+            }
+
+            const recentHistory = history.slice(-5).reverse();
+            historyList.innerHTML = '';
+            
+            recentHistory.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const leftDiv = document.createElement('div');
+                const scenarioDiv = document.createElement('div');
+                scenarioDiv.className = 'history-scenario';
+                scenarioDiv.textContent = item.scenario;
+                
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'history-date';
+                const date = new Date(item.timestamp);
+                const dateStr = date.toLocaleDateString('ja-JP');
+                const timeStr = date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                dateDiv.textContent = `${dateStr} ${timeStr}`;
+                
+                leftDiv.appendChild(scenarioDiv);
+                leftDiv.appendChild(dateDiv);
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `history-result ${item.correct ? 'correct' : 'incorrect'}`;
+                resultDiv.textContent = item.correct ? '正解' : '不正解';
+                
+                historyItem.appendChild(leftDiv);
+                historyItem.appendChild(resultDiv);
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // CSVダウンロード
+        function downloadHistory() {
+            const history = loadHistory();
+            if (history.length === 0) {
+                alert('履歴がありません。');
+                return;
+            }
+
+            // BOM付きUTF-8でCSVを作成
+            const csvContent = [
+                '日時,シナリオ名,正誤',
+                ...history.map(item => {
+                    const date = new Date(item.timestamp);
+                    const dateStr = date.toLocaleDateString('ja-JP') + ' ' + date.toLocaleTimeString('ja-JP');
+                    return `"${dateStr}","${item.scenario}","${item.correct ? '正解' : '不正解'}"`;
+                })
+            ].join('\n');
+
+            // BOM（Byte Order Mark）を追加してUTF-8エンコーディングを明示
+            const BOM = '\uFEFF';
+            const csvWithBOM = BOM + csvContent;
+            
+            const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `ventilator_history_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 履歴消去
+        function clearHistory() {
+            if (confirm('全ての学習履歴を消去しますか？この操作は取り消せません。')) {
+                localStorage.removeItem('ventilatorHistory');
+                updateHistoryDisplay();
+                alert('履歴を消去しました。');
+            }
+        }
+
+        // ページ読み込み時に初期化
+        document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
