@@ -386,21 +386,30 @@
         }
 
         .quiz-section {
-            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            background: linear-gradient(145deg, rgba(26,31,46,0.95), rgba(26,31,46,0.9));
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
         }
 
+        .quiz-section h3,
+        .media-section h3 {
+            color: #ffffff;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
         .media-section {
-            background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            background: linear-gradient(145deg, rgba(26,31,46,0.95), rgba(26,31,46,0.9));
             padding: 25px;
             border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
         }
 
         .media {
@@ -506,8 +515,9 @@
             font-size: 20px;
             margin-bottom: 20px;
             line-height: 1.6;
-            color: var(--text);
-            font-weight: 600;
+            color: #ffffff;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .choices {
@@ -517,10 +527,10 @@
         }
 
         .choice {
-            background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.08));
             padding: 15px;
             border-radius: 12px;
-            border: 2px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
@@ -546,6 +556,8 @@
             width: 100%;
             font-size: 16px;
             line-height: 1.4;
+            color: var(--text);
+            font-weight: 500;
         }
 
         .choice:hover label {
