@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:; connect-src 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self' data: blob:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;">
+    <meta name="referrer" content="no-referrer">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
@@ -2116,13 +2117,26 @@
                 return;
             }
 
+            // CSVインジェクション対策: セルの内容をサニタイズ
+            function sanitizeCSV(value) {
+                if (typeof value !== 'string') return value;
+                // 先頭の特殊文字を削除（=, +, -, @）
+                if (/^[=+\-@]/.test(value)) {
+                    value = "'" + value;
+                }
+                // ダブルクォートをエスケープ
+                return value.replace(/"/g, '""');
+            }
+
             // BOM付きUTF-8でCSVを作成
             const csvContent = [
                 '日時,シナリオ名,正誤',
                 ...history.map(item => {
                     const date = new Date(item.timestamp);
                     const dateStr = date.toLocaleDateString('ja-JP') + ' ' + date.toLocaleTimeString('ja-JP');
-                    return `"${dateStr}","${item.scenario}","${item.correct ? '正解' : '不正解'}"`;
+                    const scenario = sanitizeCSV(item.scenario || '');
+                    const result = item.correct ? '正解' : '不正解';
+                    return `"${sanitizeCSV(dateStr)}","${scenario}","${result}"`;
                 })
             ].join('\n');
 
@@ -2136,9 +2150,12 @@
             link.setAttribute('href', url);
             link.setAttribute('download', `ventilator_history_${new Date().toISOString().split('T')[0]}.csv`);
             link.style.visibility = 'hidden';
+            link.rel = 'noopener noreferrer';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            // メモリリークを防ぐためURLを解放
+            URL.revokeObjectURL(url);
         }
 
         // 履歴消去
